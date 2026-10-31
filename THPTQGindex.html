@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Đề Thi - Quân Nguyễn Study</title>
+    <!-- Favicon (Icon trên tab trình duyệt) -->
+    <link rel="icon" href="logoweb.png" type="image/png">
+    
+    <!-- Thư viện Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-blue: #1565C0;
+            --dark-blue: #0D47A1;
+            --light-blue: #D1EAFF;
+            --panel-blue: #E5F4FF;
+            --white: #FFFFFF;
+            --text: #26374A;
+            --border: #D5E5F5;
+            --bg-color: #F8FAFC;
+            --success: #00C853;
+            --danger: #D32F2F;
+        }
+
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            color: var(--text);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+            display: none; /* Ẩn body cho đến khi JS kiểm tra xong */
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Accessibility Focus */
+        :focus-visible {
+            outline: 3px solid var(--light-blue);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        /* -------------------------------------
+           MÀN HÌNH TỪ CHỐI TRUY CẬP (ACCESS DENIED)
+        -------------------------------------- */
+        #access-denied-screen {
+            display: none;
+            min-height: 100vh;
+            background-color: var(--panel-blue);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .denied-card {
+            background: var(--white);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(21, 101, 192, 0.1);
+            text-align: center;
+            border: 1px solid var(--light-blue);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .denied-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            color: var(--danger);
+        }
+
+        .denied-card h2 {
+            font-family: 'Lora', serif;
+            color: var(--dark-blue);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .denied-card p {
+            margin-bottom: 30px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .btn-back-course {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-back-course:hover {
+            background-color: var(--dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2);
+        }
+
+        /* -------------------------------------
+           MÀN HÌNH CHÍNH (MAIN CONTENT)
+        -------------------------------------- */
+        #main-content {
+            display: none;
+            padding-top: 60px; /* Bù khoảng trống cho fixed Status Bar */
+        }
+
+        /* Status Bar */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: var(--primary-blue);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(209, 234, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .sub-brand {
+            font-size: 0.85rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .online-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--success);
+        }
+
+        .clock-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(135deg, var(--white) 0%, var(--panel-blue) 100%);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 1s ease-out;
+        }
+
+        /* Nền trừu tượng SVG pattern */
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231565c0' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.8;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-icon {
+            width: 64px;
+            height: 64px;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+
+        .slogan {
+            font-weight: 600;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .main-title {
+            font-family: 'Lora', serif;
+            font-size: 2.5rem;
+            color: var(--dark-blue);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .hero-desc {
+            font-size: 1.05rem;
+            color: var(--text);
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Exam List Section */
+        .exam-section {
+            padding: 60px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        /* Card Design */
+        .exam-card {
+            background-color: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0; /* Cho hiệu ứng JS */
+            transform: translateY(20px);
+        }
+
+        /* Hiệu ứng ánh sáng chạy ngang (Shine) */
+        .exam-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(209, 234, 255, 0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            transition: 0.6s;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .exam-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--dark-blue);
+            box-shadow: 0 12px 30px rgba(21, 101, 192, 0.1);
+        }
+
+        .exam-card:hover::after {
+            left: 125%;
+        }
+
+        .exam-card:hover .card-icon {
+            transform: scale(1.1);
+            color: var(--dark-blue);
+        }
+
+        .card-badges {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .badge-code {
+            background-color: var(--panel-blue);
+            color: var(--primary-blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: 1px solid var(--light-blue);
+        }
+
+        .badge-status {
+            background-color: rgba(0, 200, 83, 0.1);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, color 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-title {
+            font-family: 'Lora', serif;
+            font-size: 1.3rem;
+            color: var(--text);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 25px;
+            flex-grow: 1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-enter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background-color: var(--white);
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .exam-card:hover .btn-enter,
+        .btn-enter:focus-visible {
+            background-color: var(--primary-blue);
+            color: var(--white);
+        }
+
+        /* Notices Section */
+        .notices-section {
+            max-width: 800px;
+            margin: 0 auto 60px;
+            padding: 30px;
+            background-color: var(--white);
+            border-radius: 12px;
+            border-left: 5px solid var(--primary-blue);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        .notices-title {
+            font-family: 'Lora', serif;
+            font-size: 1.2rem;
+            color: var(--dark-blue);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notices-list {
+            list-style: none;
+        }
+
+        .notices-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .notices-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary-blue);
+            font-weight: bold;
+            font-size: 1.2rem;
+            top: -2px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--dark-blue);
+            color: var(--white);
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 4px solid var(--primary-blue);
+        }
+
+        .footer-brand {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .footer-system {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .footer-slogan {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-show {
+            animation: fadeInUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        /* --- BỔ SUNG CSS TÍNH NĂNG MỚI --- */
+        /* Accordion Đề thi */
+        .accordion-group { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; cursor: pointer; background: var(--panel-blue); transition: background 0.3s; }
+        .accordion-header:hover { background: var(--light-blue); }
+        .acc-title h3 { font-family: 'Lora', serif; color: var(--dark-blue); font-size: 1.2rem; margin-bottom: 4px; }
+        .acc-count { font-size: 0.85rem; color: var(--primary-blue); font-weight: 600; }
+        .acc-icon { color: var(--primary-blue); transition: transform 0.4s ease; transform: rotate(180deg); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out, padding 0.5s ease; padding: 0 25px; }
+        .accordion-content.acc-open { max-height: 3000px; padding: 30px 25px; }
+
+        /* 3D Book Card */
+        .doc-grid { display: grid; grid-template-columns: 1fr; gap: 30px; }
+        .book-card { display: flex; flex-direction: row; gap: 40px; background: var(--white); border-radius: 16px; border: 1px solid var(--border); padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); align-items: center; transition: 0.3s; }
+        .book-card:hover { border-color: var(--dark-blue); box-shadow: 0 12px 30px rgba(21, 101, 192, 0.1); }
+        .book-3d { perspective: 1000px; position: relative; width: 220px; flex-shrink: 0; }
+        .book-cover { width: 100%; height: auto; border-radius: 4px 12px 12px 4px; box-shadow: -5px 10px 25px rgba(0,0,0,0.2), inset 4px 0 10px rgba(255,255,255,0.4); transform-style: preserve-3d; transform: rotateY(-15deg); transition: 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; display: block; }
+        .book-spine { position: absolute; top: 1%; left: -10px; width: 20px; height: 98%; background: linear-gradient(to right, #ccc, #fff); transform: rotateY(-75deg) translateZ(10px); transform-origin: left; opacity: 0; transition: 0.5s; border-radius: 4px 0 0 4px; }
+        .book-card:hover .book-cover { transform: rotateY(-25deg) translateY(-10px); box-shadow: -10px 20px 30px rgba(0,0,0,0.3), inset 4px 0 10px rgba(255,255,255,0.4); }
+        .book-info { flex-grow: 1; }
+        
+        @media (max-width: 768px) {
+            .book-card { flex-direction: column; text-align: center; gap: 20px; }
+            .book-info h3, .book-info p { text-align: center !important; }
+            .book-info .badge-code { margin: 0 auto 15px !important; }
+        }
+
+        /* Toast Notification */
+        .qns-toast { visibility: hidden; min-width: 250px; max-width: 90%; background-color: var(--danger); color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; font-size: 0.95rem; transform: translateX(-50%); box-shadow: 0 5px 15px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        .qns-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        .app-nav {
+            display: flex; justify-content: center; gap: 15px; padding: 20px; background: var(--white);
+            border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 99; flex-wrap: wrap;
+        }
+        .nav-btn {
+            padding: 8px 20px; border-radius: 20px; background: var(--panel-blue); color: var(--primary-blue);
+            font-weight: 600; font-size: 0.9rem; transition: 0.3s;
+        }
+        .nav-btn:hover, .nav-btn.active { background: var(--primary-blue); color: var(--white); }
+        
+        .app-section {
+            max-width: 1200px; margin: 0 auto 40px; padding: 30px; background: var(--white);
+            border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            animation: fadeInUp 0.6s ease-out; scroll-margin-top: 140px;
+        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .section-header h2 { font-family: 'Lora', serif; color: var(--dark-blue); font-size: 1.5rem; }
+        .btn-primary { background: var(--primary-blue); color: var(--white); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-primary:hover { background: var(--dark-blue); }
+        .btn-danger { background: var(--danger); color: var(--white); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        
+        /* Countdown & Dashboard */
+        .countdown-section { text-align: center; padding: 40px 20px; background: var(--dark-blue); color: var(--white); }
+        .countdown-section h2 { font-family: 'Lora', serif; font-size: 1.8rem; margin-bottom: 10px; }
+        .countdown-timer { display: flex; justify-content: center; gap: 20px; margin: 30px 0; flex-wrap: wrap; }
+        .cd-box { background: rgba(255,255,255,0.1); padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); min-width: 100px; backdrop-filter: blur(5px); }
+        .cd-box span { display: block; font-size: 2.5rem; font-weight: 700; font-family: monospace; }
+        .cd-box small { font-size: 0.85rem; opacity: 0.8; letter-spacing: 1px; }
+        .expected-badge { display: inline-block; background: var(--success); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        
+        .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 1200px; margin: -30px auto 40px; position: relative; z-index: 10; padding: 0 5%; }
+        .dash-card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; border: 1px solid var(--border); }
+        .dash-card h3 { font-size: 0.95rem; color: var(--text); opacity: 0.8; margin-bottom: 10px; }
+        .dash-card p { font-size: 2rem; color: var(--primary-blue); font-weight: 700; font-family: monospace; }
+        
+        /* Bảng Thống kê & Goals */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        th { background: var(--panel-blue); color: var(--dark-blue); font-weight: 600; }
+        
+        .goals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .goal-card { background: var(--panel-blue); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .goal-header { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 15px; }
+        .progress-bar { height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden; margin-bottom: 10px; }
+        .progress-fill { height: 100%; background: var(--primary-blue); transition: width 0.5s; }
+        
+        /* Tiện ích */
+        .utils-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .pomo-display { font-size: 4rem; font-family: monospace; font-weight: 700; color: var(--dark-blue); text-align: center; margin: 20px 0; }
+        .pomo-controls { display: flex; justify-content: center; gap: 10px; }
+        .todo-input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .todo-input-group input { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+        .todo-list-ui { list-style: none; padding: 0; }
+        .todo-list-ui li { display: flex; justify-content: space-between; padding: 10px; background: var(--panel-blue); margin-bottom: 8px; border-radius: 6px; }
+        .todo-done { text-decoration: line-through; opacity: 0.6; }
+
+        /* Modal */
+        .qns-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+        .qns-modal-content { background: var(--white); width: 90%; max-width: 400px; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .qns-modal h3 { font-family: 'Lora', serif; color: var(--dark-blue); margin-bottom: 20px; }
+        .qns-modal input, .qns-modal select, .qns-modal textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; }
+        .qns-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .exam-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .sub-brand {
+                display: none; /* Ẩn dòng phụ trên tablet để gọn Status bar */
+            }
+        }
+
+        @media (max-width: 600px) {
+            .exam-grid {
+                grid-template-columns: 1fr;
+            }
+            .status-bar {
+                padding: 0 15px;
+            }
+            .clock-container {
+                display: none; /* Ẩn đồng hồ trên mobile để tiết kiệm diện tích */
+            }
+            .main-title {
+                font-size: 2rem;
+            }
+            .hero-desc {
+                font-size: 0.95rem;
+            }
+            .notices-section {
+                margin: 0 15px 40px;
+            }
+        }
+
+        /* Hỗ trợ prefers-reduced-motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MÀN HÌNH TỪ CHỐI TRUY CẬP -->
+    <div id="access-denied-screen">
+        <div class="denied-card">
+            <svg class="denied-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <h2>TRUY CẬP KHÔNG ĐƯỢC PHÉP</h2>
+            <p>Vui lòng truy cập hệ thống thông qua trang khóa học chính thức của Quân Nguyễn Study để tiếp tục.</p>
+            <a href="" class="btn-back-course">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                QUAY LẠI KHÓA HỌC
+            </a>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH CHÍNH -->
+    <main id="main-content">
+        <!-- Status Bar -->
+        <header class="status-bar">
+            <div class="status-left">
+                <span class="brand-name">Quân Nguyễn Study</span>
+                <div class="divider"></div>
+                <span class="sub-brand">HỆ THỐNG LUYỆN THI TỐT NGHIỆP THPT QUỐC GIA 2027</span>
+            </div>
+            <div class="status-right">
+                <div class="online-status">
+                    <div class="online-dot"></div>
+                    Online
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div class="clock-container">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="real-time-clock">--:--:--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <!-- SVG Mũ tốt nghiệp / Sách học thuật -->
+                <svg class="hero-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14v7"></path>
+                </svg>
+                <div class="slogan">Xây nền tri thức – Kiến tạo tương lai</div>
+                <h1 class="main-title">DANH SÁCH ĐỀ THI</h1>
+                <p class="hero-desc">Hệ thống tổng hợp các đề thi luyện tập, giúp học sinh củng cố kiến thức, rèn luyện kỹ năng và đánh giá năng lực trước kỳ thi tốt nghiệp THPT Quốc gia.</p>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="app-nav">
+            <a href="#dashboard-area" class="nav-btn">Tổng quan</a>
+            <a href="#exam-list-area" class="nav-btn">Đề thi</a>
+            <a href="#score-area" class="nav-btn">Điểm số & Mục tiêu</a>
+            <a href="#diary-area" class="nav-btn">Nhật ký</a>
+            <a href="#utils-area" class="nav-btn">Tiện ích</a>
+        </nav>
+
+        <!-- Countdown -->
+        <section id="dashboard-area" class="countdown-section">
+            <h2>ĐẾM NGƯỢC ĐẾN KỲ THI TỐT NGHIỆP THPT QUỐC GIA 2027</h2>
+            <p>Hành trình chinh phục kỳ thi đang đến gần. Hãy chuẩn bị thật tốt cho mục tiêu của bạn!</p>
+            <div class="countdown-timer">
+                <div class="cd-box"><span id="cd-days">00</span><small>NGÀY</small></div>
+                <div class="cd-box"><span id="cd-hours">00</span><small>GIỜ</small></div>
+                <div class="cd-box"><span id="cd-minutes">00</span><small>PHÚT</small></div>
+                <div class="cd-box"><span id="cd-seconds">00</span><small>GIÂY</small></div>
+            </div>
+            <div class="expected-badge">THỜI GIAN DỰ KIẾN</div>
+        </section>
+
+        <!-- Dashboard Stats -->
+        <section class="dash-grid">
+            <div class="dash-card"><h3>Số đề đã luyện</h3><p id="dash-exams">0</p></div>
+            <div class="dash-card"><h3>Môn đã ghi nhận</h3><p id="dash-subjects">0</p></div>
+            <div class="dash-card"><h3>Điểm trung bình chung</h3><p id="dash-avg">0.00</p></div>
+            <div class="dash-card"><h3>Giờ học (7 ngày)</h3><p id="dash-time">0h</p></div>
+        </section>
+
+        <!-- Exam List & Categories -->
+        <section id="exam-list-area" class="exam-section">
+            
+            <!-- Nhóm 1: Quân Nguyễn Study -->
+            <div class="accordion-group">
+                <div class="accordion-header" onclick="toggleAccordion('qns-exams')">
+                    <div class="acc-title">
+                        <h3>ĐỀ LUYỆN THI QUÂN NGUYỄN STUDY</h3>
+                        <span class="acc-count" id="count-qns-exams">0 đề thi</span>
+                    </div>
+                    <svg id="icon-qns-exams" class="acc-icon" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div id="qns-exams" class="accordion-content acc-open">
+                    <div class="exam-grid" id="qns-exam-grid"></div>
+                </div>
+            </div>
+
+            <!-- Nhóm 2: Đề Trường / Sở -->
+            <div class="accordion-group" style="margin-top: 30px;">
+                <div class="accordion-header" onclick="toggleAccordion('other-exams')">
+                    <div class="acc-title">
+                        <h3>ĐỀ THI TRƯỜNG / SỞ</h3>
+                        <span class="acc-count" id="count-other-exams">0 đề thi</span>
+                    </div>
+                    <svg id="icon-other-exams" class="acc-icon" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div id="other-exams" class="accordion-content">
+                    <div class="exam-grid" id="other-exam-grid"></div>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- Reference Documents -->
+        <section id="reference-area" class="app-section" style="margin-top: -10px;">
+            <div class="section-header">
+                <h2>THAM KHẢO TÀI LIỆU</h2>
+            </div>
+            <p style="margin-bottom: 25px; color: var(--text); opacity: 0.9;">Tổng hợp các tài liệu học tập, tài liệu ôn luyện và học liệu tham khảo được biên soạn nhằm hỗ trợ học sinh trong quá trình chuẩn bị cho kỳ thi tốt nghiệp THPT Quốc gia 2027.</p>
+            <div class="doc-grid" id="doc-grid"></div>
+        </section>
+
+        <!-- Global Toast Notification -->
+        <div id="qns-toast" class="qns-toast"></div>
+
+        <!-- Score & Goals Section -->
+        <div id="score-area">
+            <section class="app-section">
+                <div class="section-header">
+                    <h2>THỐNG KÊ KẾT QUẢ ÔN LUYỆN</h2>
+                    <button id="btn-add-score" class="btn-primary">+ THÊM KẾT QUẢ</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="chart-container"><canvas id="scoreChart"></canvas></div>
+                    <div class="table-container">
+                        <table id="score-table">
+                            <thead><tr><th>Môn học</th><th>Số lần</th><th>Trung bình</th><th>Cao nhất</th><th>Gần nhất</th></tr></thead>
+                            <tbody id="score-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div style="margin-top:20px; overflow-x: auto;">
+                    <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--dark-blue);">Lịch sử nhập điểm</h3>
+                    <table id="history-table">
+                        <thead><tr><th>Ngày</th><th>Môn</th><th>Tên đề</th><th>Điểm</th><th>Thao tác</th></tr></thead>
+                        <tbody id="history-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="app-section">
+                <div class="section-header">
+                    <h2>MỤC TIÊU CHINH PHỤC</h2>
+                    <button id="btn-edit-goals" class="btn-primary">THIẾT LẬP MỤC TIÊU</button>
+                </div>
+                <div id="goals-container" class="goals-grid"></div>
+            </section>
+        </div>
+
+        <!-- Diary Section -->
+        <section id="diary-area" class="app-section">
+            <div class="section-header">
+                <h2>NHẬT KÝ ÔN LUYỆN</h2>
+                <button id="btn-add-diary" class="btn-primary">+ THÊM NHẬT KÝ</button>
+            </div>
+            <div class="table-container">
+                <table id="diary-table">
+                    <thead><tr><th>Ngày</th><th>Môn</th><th>Nội dung</th><th>Thời gian (phút)</th><th>Thao tác</th></tr></thead>
+                    <tbody id="diary-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Utilities -->
+        <section id="utils-area" class="app-section utils-grid">
+            <div>
+                <div class="section-header"><h2>ĐỒNG HỒ POMODORO</h2></div>
+                <div class="pomo-display" id="pomo-display">25:00</div>
+                <div class="pomo-controls">
+                    <button id="btn-pomo-25" class="nav-btn">25p</button>
+                    <button id="btn-pomo-45" class="nav-btn">45p</button>
+                    <button id="btn-pomo-60" class="nav-btn">60p</button>
+                </div>
+                <div class="pomo-controls" style="margin-top: 15px;">
+                    <button id="btn-pomo-start" class="btn-primary">Bắt đầu</button>
+                    <button id="btn-pomo-pause" class="btn-primary" style="background:var(--text);">Tạm dừng</button>
+                </div>
+            </div>
+            <div>
+                <div class="section-header"><h2>VIỆC CẦN LÀM</h2></div>
+                <div class="todo-input-group">
+                    <input type="text" id="todo-input" placeholder="Ví dụ: Ôn tập Hàm số...">
+                    <button id="btn-todo-add" class="btn-primary">Thêm</button>
+                </div>
+                <ul id="todo-list" class="todo-list-ui"></ul>
+            </div>
+        </section>
+
+        <!-- Global Modal Form -->
+        <div id="qns-modal" class="qns-modal">
+            <div class="qns-modal-content">
+                <h3 id="modal-title">Tiêu đề Modal</h3>
+                <div id="modal-body"></div>
+                <div class="qns-modal-actions">
+                    <button class="btn-primary" style="background:gray;" onclick="closeModal()">Hủy</button>
+                    <button id="modal-save" class="btn-primary">Lưu thông tin</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notices -->
+        <section class="notices-section">
+            <h3 class="notices-title">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                LƯU Ý DÀNH CHO THÍ SINH
+            </h3>
+            <ul class="notices-list">
+                <li>Kiểm tra thiết bị và kết nối Internet trước khi làm bài.</li>
+                <li>Đọc kỹ hướng dẫn trước khi bắt đầu.</li>
+                <li>Không tải lại trang hoặc thoát khỏi giao diện khi đang làm bài nếu không cần thiết.</li>
+                <li>Hoàn thành và nộp bài theo hướng dẫn của hệ thống.</li>
+            </ul>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-brand">© 2026 QUÂN NGUYỄN STUDY</div>
+            <div class="footer-system">Hệ thống luyện thi tốt nghiệp THPT Quốc gia 2027</div>
+            <div class="footer-slogan">Xây nền tri thức – Kiến tạo tương lai</div>
+        </footer>
+    </main>
+
+    <!-- JavaScript Kiểm soát truy cập và UI -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. CƠ CHẾ KIỂM SOÁT NGUỒN TRUY CẬP (BẮT BUỘC)
+            const allowedReferrer = "";
+            const currentReferrer = document.referrer;
+            
+            // Lấy các vùng giao diện
+            const bodyEl = document.body;
+            const mainContent = document.getElementById("main-content");
+            const deniedScreen = document.getElementById("access-denied-screen");
+
+            // Kiểm tra so khớp chính xác tuyệt đối
+            if (currentReferrer === allowedReferrer) {
+                // Hợp lệ: Hiển thị nội dung
+                bodyEl.style.display = "block";
+                mainContent.style.display = "block";
+                
+                // Kích hoạt hiệu ứng xuất hiện cho các Card
+                const cards = document.querySelectorAll('.js-card');
+                cards.forEach(card => {
+                    card.classList.add('card-show');
+                });
+
+                // KÍCH HOẠT CÁC TÍNH NĂNG ỨNG DỤNG NẾU TRUY CẬP HỢP LỆ
+                initQNSApp();
+
+            } else {
+                // Không hợp lệ (Sai nguồn hoặc trống): Hiển thị cảnh báo
+                bodyEl.style.display = "block";
+                deniedScreen.style.display = "flex";
+            }
+
+            // 2. ĐỒNG HỒ THỜI GIAN THỰC CHO STATUS BAR
+            const clockElement = document.getElementById("real-time-clock");
+            function updateClock() {
+                if(!clockElement) return;
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            
+            // Cập nhật ngay lập tức và sau đó mỗi giây
+            updateClock();
+            setInterval(updateClock, 1000);
+        });
+
+        // =========================================================================
+        // KHỐI LOGIC ỨNG DỤNG QUÂN NGUYỄN STUDY (CHỈ CHẠY KHI TRUY CẬP HỢP LỆ)
+        // =========================================================================
+        
+        // 1. Cấu hình ngày thi (Dự kiến)
+        const EXAM_CONFIG = { year: 2027, month: 6, day: 25, hour: 7, minute: 30 };
+        
+        // Dữ liệu Đề thi và Tài liệu (Mở rộng dễ dàng tại đây)
+        const examsData = [
+            { id: "qns1", code: "TN01", title: "Đề luyện tập số 01", description: "Hệ thống đề thi luyện tập được biên soạn bởi Quân Nguyễn Study, hỗ trợ học sinh củng cố kiến thức trước kỳ thi.", type: "qns", url: "TN01.html" },
+            { id: "qns2", code: "TN02", title: "Đề luyện tập số 02", description: "Hệ thống đề thi luyện tập được biên soạn bởi Quân Nguyễn Study, hỗ trợ học sinh củng cố kiến thức trước kỳ thi.", type: "qns", url: "TN02.html" },
+            { id: "qns3", code: "TN03", title: "Đề luyện tập số 03", description: "Hệ thống đề thi luyện tập được biên soạn bởi Quân Nguyễn Study, hỗ trợ học sinh củng cố kiến thức trước kỳ thi.", type: "qns", url: "TN03.html" }
+            // Cấu trúc thêm đề mới: { id: "xx", code: "MÃ", title: "Tên", description: "Mô tả", type: "other", url: "link.html" hoặc null }
+        ];
+
+        const docsData = [
+            { id: "doc1", title: "Thực chiến luyện đề - Tập 1", image: "TCLD1.png", author: "Quân Nguyễn Study", category: "TÀI LIỆU LUYỆN ĐỀ", description: "Tài liệu luyện tập được xây dựng nhằm giúp học sinh rèn luyện kỹ năng xử lý đề thi, củng cố kiến thức trọng tâm và từng bước nâng cao khả năng vận dụng kiến thức vào giải quyết các câu hỏi trong kỳ thi tốt nghiệp THPT Quốc gia.", url: null }
+        ];
+
+        // Biến toàn cục hệ thống
+        let qnsData = { scores: [], goals: { 'Toán': 8.0, 'Ngữ văn': 7.5, 'Tiếng Anh': 8.0 }, diary: [], todos: [] };
+        let chartInstance = null;
+        let pomoInterval; let pomoTimeLeft = 25 * 60; let pomoRunning = false;
+        
+        // Modal Utils
+        const modal = document.getElementById('qns-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalSave = document.getElementById('modal-save');
+        window.closeModal = () => { modal.style.display = 'none'; modalBody.innerHTML = ''; };
+
+        function initQNSApp() {
+            // Load LocalStorage
+            const localData = localStorage.getItem('qns_app_data_2027');
+            if(localData) qnsData = JSON.parse(localData);
+            
+            initCountdown();
+            renderExams();
+            renderDocs();
+            initAccordionState();
+            renderDashboard();
+            renderScores();
+            renderGoals();
+            renderDiary();
+            renderTodos();
+            setupEvents();
+        }
+
+        function saveData() {
+            localStorage.setItem('qns_app_data_2027', JSON.stringify(qnsData));
+            renderDashboard();
+        }
+
+        // 2. Countdown Logic
+        function initCountdown() {
+            const targetDate = new Date(EXAM_CONFIG.year, EXAM_CONFIG.month - 1, EXAM_CONFIG.day, EXAM_CONFIG.hour, EXAM_CONFIG.minute).getTime();
+            setInterval(() => {
+                const now = new Date().getTime();
+                const diff = targetDate - now;
+                if(diff > 0) {
+                    document.getElementById('cd-days').textContent = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                    document.getElementById('cd-hours').textContent = String(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                    document.getElementById('cd-minutes').textContent = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                    document.getElementById('cd-seconds').textContent = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+                } else {
+                    document.querySelector('.countdown-timer').innerHTML = "<h3>KỲ THI ĐÃ DIỄN RA!</h3>";
+                }
+            }, 1000);
+        }
+
+        // 3. Dashboard Tính toán
+        function renderDashboard() {
+            const totalExams = qnsData.scores.length;
+            const subjects = [...new Set(qnsData.scores.map(s => s.subject))].length;
+            const totalScore = qnsData.scores.reduce((sum, s) => sum + parseFloat(s.score), 0);
+            const avg = totalExams ? (totalScore / totalExams).toFixed(2) : '0.00';
+            
+            // Tính giờ học trong 7 ngày
+            const now = new Date();
+            const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+            const weeklyMinutes = qnsData.diary.filter(d => new Date(d.date) >= sevenDaysAgo)
+                                               .reduce((sum, d) => sum + parseInt(d.duration), 0);
+            
+            document.getElementById('dash-exams').textContent = totalExams;
+            document.getElementById('dash-subjects').textContent = subjects;
+            document.getElementById('dash-avg').textContent = avg;
+            document.getElementById('dash-time').textContent = (weeklyMinutes / 60).toFixed(1) + 'h';
+        }
+
+        // 4. Score Logic & Chart
+        function renderScores() {
+            const summaryData = {};
+            qnsData.scores.forEach(s => {
+                if(!summaryData[s.subject]) summaryData[s.subject] = { count: 0, sum: 0, max: 0, latest: s.score };
+                summaryData[s.subject].count++;
+                summaryData[s.subject].sum += parseFloat(s.score);
+                if(parseFloat(s.score) > summaryData[s.subject].max) summaryData[s.subject].max = parseFloat(s.score);
+                summaryData[s.subject].latest = parseFloat(s.score); // Assuming sorted by date adding
+            });
+
+            const tbody = document.getElementById('score-tbody');
+            tbody.innerHTML = '';
+            for (const [subj, data] of Object.entries(summaryData)) {
+                tbody.innerHTML += `<tr>
+                    <td><strong>${subj}</strong></td><td>${data.count}</td>
+                    <td>${(data.sum/data.count).toFixed(2)}</td><td>${data.max.toFixed(2)}</td><td>${data.latest.toFixed(2)}</td>
+                </tr>`;
+            }
+
+            // Render History
+            const htbody = document.getElementById('history-tbody');
+            htbody.innerHTML = qnsData.scores.slice().reverse().map(s => `<tr>
+                <td>${s.date}</td><td>${s.subject}</td><td>${s.exam}</td><td><strong>${s.score}</strong></td>
+                <td><button class="btn-danger" onclick="deleteScore('${s.id}')">Xóa</button></td>
+            </tr>`).join('');
+
+            updateChart(summaryData);
+        }
+
+        function updateChart(summaryData) {
+            const ctx = document.getElementById('scoreChart');
+            if(!ctx) return;
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(summaryData),
+                    datasets: [{ label: 'Điểm trung bình', data: Object.values(summaryData).map(d => (d.sum/d.count).toFixed(2)), backgroundColor: '#1565C0' }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 10 } } }
+            });
+        }
+
+        window.deleteScore = (id) => {
+            if(confirm('Bạn muốn xóa kết quả này?')) {
+                qnsData.scores = qnsData.scores.filter(s => s.id !== id);
+                saveData(); renderScores(); renderGoals();
+            }
+        };
+
+        // 5. Mục tiêu (Goals)
+        function renderGoals() {
+            const cont = document.getElementById('goals-container');
+            cont.innerHTML = '';
+            
+            // Tính trung bình từng môn
+            const avgData = {};
+            qnsData.scores.forEach(s => {
+                if(!avgData[s.subject]) avgData[s.subject] = { sum: 0, count: 0 };
+                avgData[s.subject].sum += parseFloat(s.score);
+                avgData[s.subject].count++;
+            });
+
+            for (const [subj, target] of Object.entries(qnsData.goals)) {
+                let current = avgData[subj] ? (avgData[subj].sum / avgData[subj].count) : 0;
+                let percent = Math.min((current / target) * 100, 100).toFixed(0);
+                let color = percent >= 100 ? '#00C853' : (percent >= 80 ? '#1565C0' : '#FF9800');
+                
+                cont.innerHTML += `
+                    <div class="goal-card">
+                        <div class="goal-header"><span>${subj}</span> <span>${current.toFixed(2)} / ${target}</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${percent}%; background:${color};"></div></div>
+                        <small style="opacity:0.8;">Hoàn thành: ${percent}%</small>
+                    </div>`;
+            }
+        }
+
+        // 6. Nhật ký
+        function renderDiary() {
+            const tbody = document.getElementById('diary-tbody');
+            tbody.innerHTML = qnsData.diary.slice().reverse().map(d => `<tr>
+                <td>${d.date}</td><td><strong>${d.subject}</strong></td><td>${d.content}</td><td>${d.duration}p</td>
+                <td><button class="btn-danger" onclick="deleteDiary('${d.id}')">Xóa</button></td>
+            </tr>`).join('');
+        }
+        window.deleteDiary = (id) => { qnsData.diary = qnsData.diary.filter(d => d.id !== id); saveData(); renderDiary(); };
+
+        // 7. Todo
+        function renderTodos() {
+            const ul = document.getElementById('todo-list');
+            ul.innerHTML = qnsData.todos.map((t, idx) => `
+                <li class="${t.done ? 'todo-done' : ''}">
+                    <label style="cursor:pointer;"><input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${idx})"> ${t.text}</label>
+                    <button class="btn-danger" style="padding:2px 6px;" onclick="deleteTodo(${idx})">X</button>
+                </li>
+            `).join('');
+        }
+        window.toggleTodo = (idx) => { qnsData.todos[idx].done = !qnsData.todos[idx].done; saveData(); renderTodos(); };
+        window.deleteTodo = (idx) => { qnsData.todos.splice(idx, 1); saveData(); renderTodos(); };
+
+        // 8. Event Listeners & Pomodoro
+        function setupEvents() {
+            // Pomodoro
+            const pDisplay = document.getElementById('pomo-display');
+            const formatPomo = (sec) => `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+            const setPomo = (min) => { clearInterval(pomoInterval); pomoRunning = false; pomoTimeLeft = min * 60; pDisplay.textContent = formatPomo(pomoTimeLeft); };
+            
+            document.getElementById('btn-pomo-25').onclick = () => setPomo(25);
+            document.getElementById('btn-pomo-45').onclick = () => setPomo(45);
+            document.getElementById('btn-pomo-60').onclick = () => setPomo(60);
+            
+            document.getElementById('btn-pomo-start').onclick = () => {
+                if(pomoRunning) return;
+                pomoRunning = true;
+                pomoInterval = setInterval(() => {
+                    pomoTimeLeft--;
+                    pDisplay.textContent = formatPomo(pomoTimeLeft);
+                    if(pomoTimeLeft <= 0) { clearInterval(pomoInterval); pomoRunning = false; alert('Hết giờ Pomodoro! Bạn làm tốt lắm.'); setPomo(25); }
+                }, 1000);
+            };
+            document.getElementById('btn-pomo-pause').onclick = () => { clearInterval(pomoInterval); pomoRunning = false; };
+
+            // Todo Add
+            document.getElementById('btn-todo-add').onclick = () => {
+                const val = document.getElementById('todo-input').value.trim();
+                if(val) { qnsData.todos.push({ text: val, done: false }); document.getElementById('todo-input').value = ''; saveData(); renderTodos(); }
+            };
+
+            // Modal: Add Score
+            document.getElementById('btn-add-score').onclick = () => {
+                modalTitle.textContent = "Thêm Kết Quả Mới";
+                modalBody.innerHTML = `
+                    <label>Ngày làm bài</label><input type="date" id="m-date" value="${new Date().toISOString().split('T')[0]}">
+                    <label>Môn học</label><input type="text" id="m-subj" placeholder="VD: Toán, Ngữ văn...">
+                    <label>Tên đề</label><input type="text" id="m-exam" placeholder="VD: TN01, Đề thi thử số 1">
+                    <label>Điểm (0-10)</label><input type="number" step="0.01" min="0" max="10" id="m-score">
+                `;
+                modal.style.display = 'flex';
+                modalSave.onclick = () => {
+                    const sc = parseFloat(document.getElementById('m-score').value);
+                    if(sc >= 0 && sc <= 10) {
+                        qnsData.scores.push({ id: Date.now().toString(), date: document.getElementById('m-date').value, subject: document.getElementById('m-subj').value, exam: document.getElementById('m-exam').value, score: sc.toFixed(2) });
+                        saveData(); renderScores(); renderGoals(); window.closeModal();
+                    } else alert("Điểm không hợp lệ!");
+                };
+            };
+
+            // Modal: Set Goals
+            document.getElementById('btn-edit-goals').onclick = () => {
+                modalTitle.textContent = "Thiết Lập Mục Tiêu";
+                modalBody.innerHTML = `
+                    <p style="font-size:0.9rem; margin-bottom:10px;">Nhập môn và điểm mục tiêu cách nhau bằng dấu phẩy (VD: Toán:9, Tiếng Anh:8.5)</p>
+                    <textarea id="m-goals" rows="4">${Object.entries(qnsData.goals).map(g => `${g[0]}:${g[1]}`).join(', ')}</textarea>
+                `;
+                modal.style.display = 'flex';
+                modalSave.onclick = () => {
+                    const txt = document.getElementById('m-goals').value;
+                    const newGoals = {};
+                    txt.split(',').forEach(item => {
+                        const [s, p] = item.split(':');
+                        if(s && p && !isNaN(parseFloat(p))) newGoals[s.trim()] = parseFloat(p);
+                    });
+                    qnsData.goals = newGoals; saveData(); renderGoals(); window.closeModal();
+                };
+            };
+
+            // Modal: Add Diary
+            document.getElementById('btn-add-diary').onclick = () => {
+                modalTitle.textContent = "Thêm Nhật Ký Học Tập";
+                modalBody.innerHTML = `
+                    <label>Ngày</label><input type="date" id="d-date" value="${new Date().toISOString().split('T')[0]}">
+                    <label>Môn học</label><input type="text" id="d-subj" placeholder="VD: Toán">
+                    <label>Nội dung</label><input type="text" id="d-content" placeholder="VD: Luyện đề TN01">
+                    <label>Thời lượng (phút)</label><input type="number" id="d-dur" value="45">
+                `;
+                modal.style.display = 'flex';
+                modalSave.onclick = () => {
+                    if(document.getElementById('d-content').value && document.getElementById('d-dur').value) {
+                        qnsData.diary.push({ id: Date.now().toString(), date: document.getElementById('d-date').value, subject: document.getElementById('d-subj').value, content: document.getElementById('d-content').value, duration: document.getElementById('d-dur').value });
+                        saveData(); renderDiary(); window.closeModal();
+                    } else alert("Vui lòng điền đủ nội dung!");
+                };
+            };
+        }
+
+        // ==========================================
+        // KHỐI XỬ LÝ DANH SÁCH ĐỀ THI, TÀI LIỆU & UI
+        // ==========================================
+
+        // Render Đề thi từ Mảng
+        function renderExams() {
+            const qnsGrid = document.getElementById('qns-exam-grid');
+            const otherGrid = document.getElementById('other-exam-grid');
+            let qnsCount = 0, otherCount = 0;
+            let qnsHtml = '', otherHtml = '';
+
+            examsData.forEach((exam, index) => {
+                const delay = (index * 0.1).toFixed(1);
+                // Đã bỏ nhãn Trạng thái SẴN SÀNG
+                const card = `
+                <article class="exam-card js-card card-show" style="animation-delay: ${delay}s;">
+                    <div class="card-badges" style="justify-content: flex-start;">
+                        <span class="badge-code">${exam.code}</span>
+                    </div>
+                    <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h2 class="card-title">${exam.title}</h2>
+                    <p class="card-desc">${exam.description}</p>
+                    <button onclick="handleLinkClick('${exam.url}', 'Đề thi')" class="btn-enter">
+                        VÀO ĐỀ THI
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </button>
+                </article>`;
+                
+                if (exam.type === 'qns') { qnsHtml += card; qnsCount++; }
+                else { otherHtml += card; otherCount++; }
+            });
+
+            if (qnsGrid) {
+                qnsGrid.innerHTML = qnsHtml || '<p style="grid-column: 1/-1; text-align:center; color:var(--text); opacity:0.6;">Đang cập nhật danh sách đề thi...</p>';
+                document.getElementById('count-qns-exams').textContent = qnsCount < 10 ? '0'+qnsCount+' đề thi' : qnsCount+' đề thi';
+            }
+            if (otherGrid) {
+                otherGrid.innerHTML = otherHtml || '<p style="grid-column: 1/-1; text-align:center; color:var(--text); opacity:0.6;">Đang cập nhật danh sách đề thi...</p>';
+                document.getElementById('count-other-exams').textContent = otherCount < 10 ? '0'+otherCount+' đề thi' : otherCount+' đề thi';
+                
+                // Mặc định thu gọn nếu nhóm Trường/Sở không có dữ liệu và chưa có lịch sử mở trong LocalStorage
+                if (otherCount === 0 && !localStorage.getItem('qns_acc_other-exams')) {
+                    document.getElementById('other-exams').classList.remove('acc-open');
+                    document.getElementById('icon-other-exams').style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        // Render Tài liệu
+        function renderDocs() {
+            const grid = document.getElementById('doc-grid');
+            if(!grid) return;
+            let html = '';
+            docsData.forEach(doc => {
+                html += `
+                <div class="book-card card-show">
+                    <div class="book-3d">
+                        <img src="${doc.image}" alt="${doc.title}" class="book-cover" onclick="handleLinkClick('${doc.url}', 'Tài liệu')">
+                        <div class="book-spine"></div>
+                    </div>
+                    <div class="book-info">
+                        <span class="badge-code" style="margin-bottom: 12px; display: inline-block;">${doc.category}</span>
+                        <h3 class="card-title" style="text-align: left; font-size:1.4rem;">${doc.title}</h3>
+                        <p class="card-desc" style="text-align: left; margin-bottom: 12px;"><strong>Biên soạn:</strong> ${doc.author}</p>
+                        <p class="card-desc" style="text-align: left; margin-bottom: 25px;">${doc.description}</p>
+                        <button onclick="handleLinkClick('${doc.url}', 'Tài liệu')" class="btn-enter" style="width: auto; padding: 12px 24px;">
+                            XEM TÀI LIỆU
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        // Logic Accordion Thu gọn/Mở rộng
+        window.toggleAccordion = function(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            const isOpen = content.classList.contains('acc-open');
+            if(isOpen) {
+                content.classList.remove('acc-open');
+                icon.style.transform = 'rotate(0deg)';
+                localStorage.setItem('qns_acc_' + id, 'closed');
+            } else {
+                content.classList.add('acc-open');
+                icon.style.transform = 'rotate(180deg)';
+                localStorage.setItem('qns_acc_' + id, 'open');
+            }
+        }
+
+        // Khôi phục trạng thái Accordion từ LocalStorage
+        function initAccordionState() {
+            ['qns-exams', 'other-exams'].forEach(id => {
+                const state = localStorage.getItem('qns_acc_' + id);
+                const content = document.getElementById(id);
+                const icon = document.getElementById('icon-' + id);
+                if(content && icon) {
+                    if(state === 'closed') {
+                        content.classList.remove('acc-open');
+                        icon.style.transform = 'rotate(0deg)';
+                    } else if (state === 'open') {
+                        content.classList.add('acc-open');
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                }
+            });
+        }
+
+        // Xử lý Kiểm tra URL Trống và Bật thông báo
+        window.handleLinkClick = function(url, type) {
+            if(!url || url === 'null' || url === 'undefined' || url.trim() === '') {
+                showToast(`${type} hiện chưa được thiết lập đường dẫn truy cập. Vui lòng quay lại sau!`);
+            } else {
+                window.location.href = url;
+            }
+        }
+
+        // Hiệu ứng Toast Notification
+        function showToast(msg) {
+            const toast = document.getElementById('qns-toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+    </script>
+</body>
+</html>
