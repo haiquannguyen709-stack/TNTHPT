@@ -633,6 +633,222 @@
                 scroll-behavior: auto !important;
             }
         }
+
+        /* --- CSS MÔ HÌNH SÁCH 3D & MODAL TÀI LIỆU --- */
+        .doc-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .doc-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .doc-modal-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(21, 101, 192, 0.2);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .doc-modal-overlay.active .doc-modal-container {
+            transform: scale(1);
+        }
+        .doc-modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: var(--panel-blue);
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary-blue);
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 10;
+        }
+        .doc-modal-close:hover {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+        .doc-modal-body {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 30px;
+            padding: 40px 30px 30px 30px;
+            align-items: center;
+        }
+        .doc-modal-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .doc-modal-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--panel-blue) 0%, var(--white) 100%);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--light-blue);
+            min-height: 380px;
+        }
+        .modal-book-3d {
+            perspective: 1200px;
+            width: 180px;
+            height: 260px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            cursor: pointer;
+        }
+        .modal-book-3d:hover {
+            transform: rotateY(-15deg) translateY(-5px);
+        }
+        .modal-book-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: -5px 10px 20px rgba(0,0,0,0.25);
+        }
+        .modal-book-front {
+            background-image: url('TCLD1.png');
+            background-size: cover;
+            background-position: center;
+            transform: rotateY(0deg);
+        }
+        .modal-book-back {
+            background-image: url('TCLD1_back.png');
+            background-size: cover;
+            background-position: center;
+            transform: rotateY(180deg);
+        }
+        .modal-book-spine {
+            position: absolute;
+            top: 0; left: -12px;
+            width: 24px; height: 100%;
+            background: linear-gradient(to right, #0d47a1, #1565c0, #0d47a1);
+            transform: rotateY(-90deg) translateZ(12px);
+            border-radius: 4px 0 0 4px;
+        }
+        .book-flip-hint {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--primary-blue);
+            background: var(--white);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--light-blue);
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .modal-price {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            font-weight: 700;
+            font-family: monospace;
+            margin: 10px 0 15px 0;
+        }
+        .password-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+        .password-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--dark-blue);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .password-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .password-input-group input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            outline: none;
+            background: var(--white);
+        }
+        .password-input-group input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px var(--light-blue);
+        }
+        .password-input-group input.error {
+            border-color: var(--danger);
+            background-color: rgba(211, 47, 47, 0.02);
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+        .toggle-password:hover {
+            color: var(--primary-blue);
+        }
+        .password-error-msg {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            display: none;
+            font-weight: 500;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+        @media (max-width: 768px) {
+            .doc-modal-body {
+                grid-template-columns: 1fr;
+                padding: 30px 20px 20px 20px;
+                max-height: 85vh;
+                overflow-y: auto;
+            }
+            .doc-modal-right {
+                min-height: 280px;
+                padding: 20px;
+            }
+            .modal-book-3d {
+                width: 140px;
+                height: 200px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -855,6 +1071,57 @@
             </div>
         </div>
 
+        <!-- Modal Xác thực Mật khẩu & Giới thiệu Tài liệu Tham khảo -->
+        <div id="doc-modal" class="doc-modal-overlay">
+            <div class="doc-modal-container">
+                <button class="doc-modal-close" onclick="closeDocModal()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <div class="doc-modal-body">
+                    <!-- Cột bên trái: Thông tin và xác thực -->
+                    <div class="doc-modal-left">
+                        <span class="badge-code" style="margin-bottom: 10px; display: inline-block; width: fit-content;">TÀI LIỆU LUYỆN ĐỀ</span>
+                        <h3 style="font-family: 'Lora', serif; color: var(--dark-blue); font-size: 1.4rem; margin-bottom: 5px;">THỰC CHIẾN LUYỆN ĐỀ – TẬP 1</h3>
+                        <p style="font-size: 0.9rem; color: #555; margin-bottom: 5px;"><strong>Đơn vị biên soạn:</strong> Quân Nguyễn Study</p>
+                        <div class="modal-price">75.000 VNĐ</div>
+                        <p style="font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 15px;">Tài liệu luyện tập được biên soạn nhằm giúp học sinh rèn luyện kỹ năng xử lý đề thi, củng cố kiến thức trọng tâm và từng bước nâng cao khả năng vận dụng kiến thức vào giải quyết các câu hỏi trong kỳ thi tốt nghiệp THPT Quốc gia.</p>
+                        
+                        <div class="password-section">
+                            <label class="password-label" for="doc-password-input">MẬT KHẨU TRUY CẬP E-BOOK</label>
+                            <div class="password-input-group" id="password-group-box">
+                                <input type="password" id="doc-password-input" placeholder="Nhập mật khẩu để mở tài liệu" autocomplete="off">
+                                <button type="button" class="toggle-password" id="toggle-pwd-btn" onclick="togglePasswordVisibility()">
+                                    <svg id="eye-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="password-error" class="password-error-msg">Mật khẩu không chính xác. Vui lòng kiểm tra và thử lại!</div>
+                            <button type="button" class="btn-enter" onclick="verifyAndOpenEbook()" style="background: var(--primary-blue); color: var(--white); margin-top: 5px;">
+                                XÁC NHẬN & XEM E-BOOK
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Cột bên phải: Mô hình sách 3D -->
+                    <div class="doc-modal-right">
+                        <div class="modal-book-3d" id="modal-book-model" onclick="flipModalBook()">
+                            <div class="modal-book-face modal-book-front"></div>
+                            <div class="modal-book-spine"></div>
+                            <div class="modal-book-face modal-book-back"></div>
+                        </div>
+                        <div class="book-flip-hint">Nhấp vào sách để lật mặt sau</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Notices -->
         <section class="notices-section">
             <h3 class="notices-title">
@@ -944,7 +1211,7 @@
         ];
 
         const docsData = [
-            { id: "doc1", title: "Thực chiến luyện đề - Tập 1", image: "TCLD1.png", author: "Quân Nguyễn Study", category: "TÀI LIỆU LUYỆN ĐỀ", description: "Tài liệu luyện tập được xây dựng nhằm giúp học sinh rèn luyện kỹ năng xử lý đề thi, củng cố kiến thức trọng tâm và từng bước nâng cao khả năng vận dụng kiến thức vào giải quyết các câu hỏi trong kỳ thi tốt nghiệp THPT Quốc gia.", url: null }
+            { id: "doc1", title: "Thực chiến luyện đề - Tập 1", image: "TCLD1.png", author: "Quân Nguyễn Study", category: "TÀI LIỆU LUYỆN ĐỀ", description: "Tài liệu luyện tập được xây dựng nhằm giúp học sinh rèn luyện kỹ năng xử lý đề thi, củng cố kiến thức trọng tâm và từng bước nâng cao khả năng vận dụng kiến thức vào giải quyết các câu hỏi trong kỳ thi tốt nghiệp THPT Quốc gia.", url: "https://online.fliphtml5.com/quannguyenstudy/kkhe/" }
         ];
 
         // Biến toàn cục hệ thống
@@ -1318,10 +1585,14 @@
 
         // Xử lý Kiểm tra URL Trống và Bật thông báo
         window.handleLinkClick = function(url, type) {
-            if(!url || url === 'null' || url === 'undefined' || url.trim() === '') {
-                showToast(`${type} hiện chưa được thiết lập đường dẫn truy cập. Vui lòng quay lại sau!`);
+            if (type === 'Tài liệu') {
+                openDocModal(url);
             } else {
-                window.location.href = url;
+                if(!url || url === 'null' || url === 'undefined' || url.trim() === '') {
+                    showToast(`${type} hiện chưa được thiết lập đường dẫn truy cập. Vui lòng quay lại sau!`);
+                } else {
+                    window.location.href = url;
+                }
             }
         }
 
@@ -1332,6 +1603,97 @@
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3500);
         }
+
+        // ==========================================
+        // XỬ LÝ MODAL TÀI LIỆU & XÁC THỰC MẬT KHẨU E-BOOK
+        // ==========================================
+        let targetEbookUrl = "https://online.fliphtml5.com/quannguyenstudy/kkhe/";
+
+        function openDocModal(url) {
+            if(url) targetEbookUrl = url;
+            const modalOverlay = document.getElementById('doc-modal');
+            const pwdInput = document.getElementById('doc-password-input');
+            const errorMsg = document.getElementById('password-error');
+            const inputBox = document.getElementById('password-group-box');
+            
+            pwdInput.value = '';
+            errorMsg.style.display = 'none';
+            inputBox.classList.remove('shake');
+            pwdInput.classList.remove('error');
+            
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            setTimeout(() => pwdInput.focus(), 100);
+        }
+
+        function closeDocModal() {
+            const modalOverlay = document.getElementById('doc-modal');
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDocModal();
+                if (typeof window.closeModal === 'function') window.closeModal();
+            }
+        });
+
+        document.getElementById('doc-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocModal();
+            }
+        });
+
+        let isBookFlipped = false;
+        function flipModalBook() {
+            const bookEl = document.getElementById('modal-book-model');
+            isBookFlipped = !isBookFlipped;
+            if (isBookFlipped) {
+                bookEl.style.transform = 'rotateY(180deg) translateY(-5px)';
+            } else {
+                bookEl.style.transform = 'rotateY(0deg) translateY(0)';
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('doc-password-input');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7-10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>`;
+            } else {
+                pwdInput.type = 'password';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
+            }
+        }
+
+        function verifyAndOpenEbook() {
+            const pwdInput = document.getElementById('doc-password-input');
+            const errorMsg = document.getElementById('password-error');
+            const inputBox = document.getElementById('password-group-box');
+            const enteredValue = pwdInput.value.trim();
+
+            if (enteredValue === "674155") {
+                errorMsg.style.display = 'none';
+                window.location.href = targetEbookUrl;
+            } else {
+                errorMsg.style.display = 'block';
+                pwdInput.classList.add('error');
+                inputBox.classList.remove('shake');
+                void inputBox.offsetWidth;
+                inputBox.classList.add('shake');
+                pwdInput.focus();
+                pwdInput.select();
+            }
+        }
+
+        document.getElementById('doc-password-input')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyAndOpenEbook();
+            }
+        });
     </script>
 </body>
 </html>
